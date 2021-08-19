@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Canvas</title>
+</head>
+<body>
+    <canvas id="grid" width="100" height="100" style="border:1px solid #000000;">
+    </canvas>
+    <br>
+
+    <input type="text" id="height-ctx" placeholder="height"><br>
+    <input type="text" id="width-ctx" placeholder="width"><br>
+    <input type="text" id="margin-ctx" placeholder="margin" value="10"><br>
+    <input type="button" id="confirm-ctx" value="Confirm">
+
+    <script>
+
+        let grid = document.getElementById("grid"),
+            confirmCtx = document.getElementById("confirm-ctx"),
+            ctx = grid.getContext("2d");
+        confirmCtx.addEventListener('click',function (){
+            let widthCtx = document.getElementById("width-ctx").value,
+                heightCtx = document.getElementById("height-ctx").value;
+           grid.height = heightCtx;
+           grid.width = widthCtx;
+           reloadGrid();
+        });
+
+        reloadGrid();
+
+        function reloadGrid(){
+            let margin = document.getElementById("margin-ctx").value;
+            for(i=0;i<grid.width; i++){
+                ctx.moveTo((i * margin), 0);
+                ctx.lineTo((i * margin), grid.height);
+                ctx.stroke();
+            }
+            for(i=0;i<grid.height;i++){
+                ctx.moveTo(0,(i * margin));
+                ctx.lineTo(grid.width,(i * margin));
+                ctx.stroke();
+            }
+        }
+
+        grid.addEventListener('mousemove', function (e) {MouseMove(e)});
+
+        function MouseMove(e){
+            let Rect = grid.getBoundingClientRect(),
+                X = Math.round(e.clientX - Rect.left),
+                Y = Math.round(e.clientY - Rect.top),
+                margin = document.getElementById("margin-ctx").value;
+            ctx.fillRect(Math.round10(X,1),  Math.round10(Y, 1), margin , margin);
+            console.log("X: " + Math.round10(X,1) + ". Y: " + Math.round10(Y, 1));
+
+        }
+
+        function decimalAdjust(type, value, exp) {
+            // Если степень не определена, либо равна нулю...
+            if (typeof exp === 'undefined' || +exp === 0) {
+                return Math[type](value);
+            }
+            value = +value;
+            exp = +exp;
+            // Если значение не является числом, либо степень не является целым числом...
+            if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+                return NaN;
+            }
+            // Сдвиг разрядов
+            value = value.toString().split('e');
+            value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+            // Обратный сдвиг
+            value = value.toString().split('e');
+            return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+        }
+        // Десятичное округление к ближайшему
+        if (!Math.round10) {
+            Math.round10 = function(value, exp) {
+                return decimalAdjust('round', value, exp);
+            };
+        }
+        // Десятичное округление вниз
+        if (!Math.floor10) {
+            Math.floor10 = function(value, exp) {
+                return decimalAdjust('floor', value, exp);
+            };
+        }
+        // Десятичное округление вверх
+        if (!Math.ceil10) {
+            Math.ceil10 = function(value, exp) {
+                return decimalAdjust('ceil', value, exp);
+            };
+        }
+    </script>
+</body>
+</html>
